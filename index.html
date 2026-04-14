@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dollar Streak 95</title>
-    <link rel="icon" type="image/gif" href="pic/rover-windows-xp.gif">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -87,8 +86,11 @@
 
         <!-- Calendar column -->
         <div class="sidebar-column">
-            <!-- Rover decoration -->
-            <img class="rover-decoration" id="rover-decoration" src="pic/смотрит.gif" alt="" aria-hidden="true">
+            <!-- Rover mascot -->
+            <div class="rover-stage" aria-hidden="true">
+                <img class="rover-image rover-image-idle is-visible" id="rover-idle-image" src="pic/смотрит.gif" alt="">
+                <img class="rover-image rover-image-activity" id="rover-activity-image" src="pic/rover-windows-xp.gif" alt="">
+            </div>
 
             <!-- Monthly calendar -->
             <aside class="calendar-window" aria-label="Календарь рабочих дней">
@@ -333,6 +335,7 @@
     <!-- Shared helpers -->
     <script src="js/utils.js"></script>
     <script src="js/context.js"></script>
+    <script src="js/rover.js"></script>
     <script src="js/wheel.js"></script>
     <!-- Main app -->
     <script src="script.js"></script>

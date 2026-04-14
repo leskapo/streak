@@ -1,37 +1,55 @@
-// Rover decoration: idle sprite plus a short animation burst on player actions.
-var roverDecoration = document.getElementById("rover-decoration");
-const roverDecorationIdleSrc = "pic/смотрит.gif";
-const roverDecorationActionSrc = "pic/rover-windows-xp.gif";
-const ROVER_ACTION_DURATION_MS = 3300;
+// Rover mascot animation helpers.
+var roverIdleImage = document.getElementById("rover-idle-image");
+var roverActivityImage = document.getElementById("rover-activity-image");
+var roverActivityTimer = null;
+var roverPlayToken = 0;
+var ROVER_ACTIVITY_DURATION_MS = 3500;
+var roverActivityPreload = new Image();
 
-var roverRevealTimer = null;
-var roverHideTimer = null;
+roverActivityPreload.src = "pic/rover-windows-xp.gif";
 
-function clearRoverTimers() {
-    if (roverRevealTimer) {
-        window.clearTimeout(roverRevealTimer);
-        roverRevealTimer = null;
-    }
-
-    if (roverHideTimer) {
-        window.clearTimeout(roverHideTimer);
-        roverHideTimer = null;
-    }
-}
-
-function pulseRoverDecoration() {
-    if (!roverDecoration) {
+function renderRoverIdleState() {
+    if (!roverIdleImage || !roverActivityImage) {
         return;
     }
 
-    clearRoverTimers();
-    roverDecoration.src = `${roverDecorationActionSrc}?t=${Date.now()}`;
-
-    roverRevealTimer = window.setTimeout(() => {
-        roverHideTimer = window.setTimeout(() => {
-            roverDecoration.src = roverDecorationIdleSrc;
-            roverHideTimer = null;
-        }, ROVER_ACTION_DURATION_MS);
-        roverRevealTimer = null;
-    }, 280);
+    roverIdleImage.classList.remove("is-hidden");
+    roverIdleImage.classList.add("is-visible");
+    roverActivityImage.classList.remove("is-visible");
 }
+
+function playRoverActivity() {
+    if (!roverIdleImage || !roverActivityImage) {
+        return;
+    }
+
+    roverPlayToken += 1;
+    const activeToken = roverPlayToken;
+
+    if (roverActivityTimer) {
+        window.clearTimeout(roverActivityTimer);
+        roverActivityTimer = null;
+    }
+
+    roverIdleImage.classList.add("is-hidden");
+    roverActivityImage.classList.add("is-visible");
+    roverActivityImage.src = `pic/rover-windows-xp.gif?play=${Date.now()}-${roverPlayToken}`;
+
+    roverActivityTimer = window.setTimeout(() => {
+        if (activeToken !== roverPlayToken) {
+            return;
+        }
+
+        roverActivityTimer = null;
+        renderRoverIdleState();
+    }, ROVER_ACTIVITY_DURATION_MS);
+}
+
+function initRoverFeature() {
+    renderRoverIdleState();
+}
+
+window.playRoverActivity = playRoverActivity;
+window.initRoverFeature = initRoverFeature;
+
+initRoverFeature();

@@ -133,6 +133,9 @@ function closeWheelPopup() {
     wheelResultMessage = "Нажмите на центр, чтобы начать";
     renderWheelPopup();
     renderWheelStatusWidget();
+    if (typeof window.playRoverActivity === "function") {
+        window.playRoverActivity();
+    }
 }
 
 function finalizeWheelSpin() {

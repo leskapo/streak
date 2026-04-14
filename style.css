@@ -104,20 +104,6 @@ body.is-wheel-spinning *:hover {
     position: relative;
 }
 
-/* Rover decoration */
-.rover-decoration {
-    position: absolute;
-    left: 50%;
-    top: -136px;
-    width: min(160px, 18vw);
-    height: auto;
-    transform: translateX(-50%);
-    pointer-events: none;
-    opacity: 0.95;
-    z-index: 0;
-    image-rendering: auto;
-}
-
 /* Shared window shells and title bars */
 .app-window,
 .calendar-window {
@@ -1709,6 +1695,47 @@ body.is-wheel-spinning *:hover {
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+
+.rover-stage {
+    position: relative;
+    width: 100%;
+    height: 86px;
+    margin-bottom: -12px;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 4;
+}
+
+.rover-image {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: -2px;
+    width: 184px;
+    height: auto;
+    image-rendering: pixelated;
+    pointer-events: none;
+    user-select: none;
+    transition: opacity 120ms linear;
+}
+
+.rover-image-idle {
+    z-index: 1;
+    opacity: 1;
+}
+
+.rover-image-idle.is-hidden {
+    opacity: 0;
+}
+
+.rover-image-activity {
+    z-index: 2;
+    opacity: 0;
+}
+
+.rover-image-activity.is-visible {
+    opacity: 1;
 }
 
 .admin-launcher {

@@ -1,4 +1,5 @@
 // Calendar and history helpers.
+
 function getLatestHistoryDateKey() {
     let latestDateKey = getLocalDateKey();
 
@@ -431,6 +432,7 @@ function addTodoItem() {
 
     saveTodoState();
     renderTodoPanel();
+    triggerRoverActivity();
 }
 
 function toggleTodoItem(index) {
@@ -509,9 +511,6 @@ function completeTodoItem(todoId) {
         });
 
         saveTodoState();
-        if (typeof pulseRoverDecoration === "function") {
-            pulseRoverDecoration();
-        }
         renderTodoPanel();
         renderAdminTodoPanel();
     }, 360);
@@ -740,11 +739,9 @@ function setCalendarDayStatus(dateKey, newType) {
     currentStreak = getWheelEligibleStreakCount();
     todayRate = getDailyRate(currentStreak);
     lastWorkDate = getLatestWorkDateKey();
-    if (typeof pulseRoverDecoration === "function") {
-        pulseRoverDecoration();
-    }
     closeCalendarEditPopup();
     renderApp();
+    triggerRoverActivity();
 }
 
 function setTodayDayStatus(newType) {
@@ -1039,6 +1036,12 @@ function safeRender(renderFn) {
         renderFn();
     } catch (error) {
         console.error(error);
+    }
+}
+
+function triggerRoverActivity() {
+    if (typeof window.playRoverActivity === "function") {
+        window.playRoverActivity();
     }
 }
 
