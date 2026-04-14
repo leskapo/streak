@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dollar Streak 95</title>
+    <link rel="icon" type="image/gif" href="pic/rover-windows-xp.gif">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Main workspace -->
+    <div class="workspace">
+        <!-- Primary app window -->
+        <main class="app-window" aria-label="Трекер работы Dollar Streak 95">
+            <header class="title-bar">
+                <div>Dollar Streak 95 - Трекер работы</div>
+                <div class="title-bar-controls" aria-hidden="true">
+                    <button class="title-bar-button" type="button">_</button>
+                    <button class="title-bar-button" type="button">▢</button>
+                    <button class="title-bar-button close" type="button">×</button>
+                </div>
+            </header>
+
+            <section class="window-content">
+                <h1 class="app-title">Dollar Streak 95</h1>
+                <p class="subtitle">Отмечайте рабочие дни, получайте ежедневные награды и открывайте бонусные вращения.</p>
+
+                <div class="info-widget">
+                    <button class="info-button" type="button" aria-label="Информация">i</button>
+                    <div class="info-panel" aria-hidden="true">
+                        <p class="info-panel-title">Информация</p>
+                        <p class="info-row" id="info-current-rate">Текущая ставка: $1</p>
+                        <p class="info-row" id="info-balance">Баланс: $0</p>
+                        <p class="info-row">Последние 3 рабочих дня:</p>
+                        <ul class="info-list" id="info-last-work-days">
+                            <li>Нет данных</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <section class="metrics-grid" aria-label="Основная статистика">
+                    <div class="metric-box">
+                        <span class="metric-label">Текущая серия</span>
+                        <div class="metric-value" id="current-streak-value">0 дней</div>
+                    </div>
+                    <div class="metric-box">
+                        <span class="metric-label">Текущая дневная ставка</span>
+                        <div class="metric-value" id="current-rate-value">$1</div>
+                    </div>
+                    <div class="metric-box">
+                        <span class="metric-label">Всего заработано</span>
+                        <div class="metric-value metric-value-with-action">
+                            <span id="total-earned-value">$0</span>
+                            <button class="metric-icon-button" type="button" id="spend-open-button" aria-label="Потратить средства" disabled><span class="metric-icon-symbol" aria-hidden="true">−</span></button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel-box" id="daily-checkin-section">
+                    <h2 class="panel-title">Ежедневная отметка</h2>
+                    <p class="panel-text">Отметьте сегодняшнюю занятость.</p>
+                    <div class="daily-checkin-actions">
+                        <button class="action-button" type="button" id="daily-checkin-button">Я работал сегодня</button>
+                        <button class="action-button" type="button" id="daily-skip-button">Прогулял:(</button>
+                    </div>
+                </section>
+
+                <section class="panel-box" id="bonus-progress-section">
+                    <h2 class="panel-title">Колесо фортуны</h2>
+                    <p class="panel-text" id="wheel-status">Можно покрутить через 10 дней!</p>
+                    <button class="action-button" type="button" id="spin-wheel-button" disabled>Крутить колесо</button>
+                </section>
+
+                <div class="main-toolbar">
+                    <button class="action-button" type="button" id="settings-open-button">Настройки</button>
+                </div>
+
+            </section>
+
+            <footer class="status-bar">
+                <span>Система готова</span>
+                <span>leskapo 2026</span>
+            </footer>
+        </main>
+
+        <!-- Calendar column -->
+        <div class="sidebar-column">
+            <!-- Rover decoration -->
+            <img class="rover-decoration" id="rover-decoration" src="pic/смотрит.gif" alt="" aria-hidden="true">
+
+            <!-- Monthly calendar -->
+            <aside class="calendar-window" aria-label="Календарь рабочих дней">
+                <div class="calendar-title-bar">
+                    <div>Календарь</div>
+                    <div class="title-bar-controls" aria-hidden="true">
+                        <button class="title-bar-button" type="button">_</button>
+                        <button class="title-bar-button" type="button">▢</button>
+                        <button class="title-bar-button close" type="button">×</button>
+                    </div>
+                </div>
+                <div class="calendar-window-body">
+                    <div class="calendar-heading-row" aria-label="Навигация по месяцам">
+                        <button class="calendar-nav-button" type="button" id="calendar-prev-button" aria-label="Предыдущий месяц">‹</button>
+                        <h2 class="calendar-heading" id="calendar-title">Апрель 2026</h2>
+                        <button class="calendar-nav-button" type="button" id="calendar-next-button" aria-label="Следующий месяц">›</button>
+                    </div>
+                    <div class="calendar-weekdays" aria-hidden="true">
+                        <div class="calendar-weekday">Пн</div>
+                        <div class="calendar-weekday">Вт</div>
+                        <div class="calendar-weekday">Ср</div>
+                        <div class="calendar-weekday">Чт</div>
+                        <div class="calendar-weekday">Пт</div>
+                        <div class="calendar-weekday">Сб</div>
+                        <div class="calendar-weekday">Вс</div>
+                    </div>
+                    <div class="calendar-grid" id="calendar-grid" aria-label="Сетка календаря"></div>
+                </div>
+            </aside>
+
+            <!-- Daily to-do -->
+            <section class="panel-box todo-panel" aria-label="Список дел на сегодня">
+                <h2 class="panel-title">To Do</h2>
+                <p class="panel-text" id="todo-date-label">На сегодня</p>
+                <div class="todo-add-row" id="todo-add-row">
+                    <input class="todo-input" type="text" id="todo-input" maxlength="64" placeholder="Добавить задачу">
+                </div>
+                <div class="todo-list" id="todo-list" aria-label="Задачи на сегодня"></div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Admin launcher -->
+    <button class="admin-launcher" type="button" id="admin-launcher-button" aria-label="Открыть админку" onclick="openAdminPopup()">🧳</button>
+
+    <!-- Intro modal -->
+    <div class="intro-overlay" id="intro-overlay" aria-hidden="true">
+        <div class="intro-window" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+            <div class="intro-title-bar">
+                <div id="intro-title">Dollar Streak 95 - Инструкция</div>
+                <div class="title-bar-controls" aria-hidden="true">
+                    <button class="title-bar-button" type="button">_</button>
+                    <button class="title-bar-button" type="button">▢</button>
+                    <button class="title-bar-button close" type="button" id="intro-close-button">×</button>
+                </div>
+            </div>
+            <div class="intro-window-body">
+                <h2 class="intro-heading">Зачем нужен этот трекер</h2>
+                <p class="intro-text">
+                    Dollar Streak 95 помогает отмечать рабочие дни и хранить историю.
+                    За каждый рабочий день растёт ваш streak и меняется дневная ставка.
+                </p>
+                <p class="intro-text">
+                    Колесо фортуны даёт бонусы, календарь показывает статусы дней, а история сохраняет ваш прогресс.
+                </p>
+                <label class="intro-checkbox">
+                    <input type="checkbox" id="intro-dont-show-checkbox">
+                    <span>Больше не показывать</span>
+                </label>
+                <div class="intro-actions">
+                    <button class="action-button" type="button" id="intro-start-button">Начать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spend modal -->
+    <div class="spend-overlay" id="spend-overlay" aria-hidden="true">
+        <div class="spend-window" role="dialog" aria-modal="true" aria-labelledby="spend-title">
+            <div class="spend-title-bar">
+                <div id="spend-title">Dollar Streak 95 - Потратить средства</div>
+                <div class="title-bar-controls" aria-hidden="true">
+                    <button class="title-bar-button" type="button">_</button>
+                    <button class="title-bar-button" type="button">▢</button>
+                    <button class="title-bar-button close" type="button" id="spend-close-button">×</button>
+                </div>
+            </div>
+            <div class="spend-window-body">
+                <p class="spend-text">Введите сумму, которую вы потратили.</p>
+                <p class="spend-note" id="spend-max-note">Доступно: $0</p>
+                <label class="spend-field">
+                    <span class="spend-field-label">Сумма</span>
+                    <input class="spend-input" type="number" id="spend-amount-input" min="1" step="1" inputmode="numeric">
+                </label>
+                <div class="spend-actions">
+                    <button class="action-button" type="button" id="spend-confirm-button">Списать</button>
+                    <button class="action-button spend-history-button" type="button" id="spend-history-button">История расходов</button>
+                    <button class="action-button" type="button" id="spend-cancel-button">Отмена</button>
+                </div>
+                <div class="spend-history-panel" id="spend-history-panel" aria-label="История расходов">
+                    <p class="spend-history-title">История расходов</p>
+                    <div class="spend-history-list" id="spend-history-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal dialogs -->
+    <div class="calendar-edit-overlay" id="calendar-edit-overlay" aria-hidden="true">
+        <div class="calendar-edit-window" role="dialog" aria-modal="true" aria-labelledby="calendar-edit-title">
+            <div class="calendar-edit-title-bar">
+                <div id="calendar-edit-title">Изменить день</div>
+                <div class="title-bar-controls" aria-hidden="true">
+                    <button class="title-bar-button" type="button">_</button>
+                    <button class="title-bar-button" type="button">▢</button>
+                    <button class="title-bar-button close" type="button" id="calendar-edit-close-button">×</button>
+                </div>
+            </div>
+            <div class="calendar-edit-content">
+                <p class="calendar-edit-date" id="calendar-edit-date">01.01.2026</p>
+                <p class="calendar-edit-note">Выберите статус дня:</p>
+                <div class="calendar-edit-actions">
+                    <button class="action-button" type="button" id="calendar-edit-work-button" onclick="setSelectedCalendarDayStatus('work')">Рабочий день</button>
+                    <button class="action-button" type="button" id="calendar-edit-skip-button" onclick="setSelectedCalendarDayStatus('skip_day')">Прогул</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error popup -->
+    <div class="error-overlay" id="work-error-overlay" aria-hidden="true">
+        <div class="error-window" role="dialog" aria-modal="true" aria-labelledby="work-error-title">
+            <div class="error-title-bar" id="work-error-title">Dollar Streak 95 - Ошибка</div>
+            <div class="error-content">
+                <div class="error-icon" aria-hidden="true">!</div>
+                <p class="error-message">Вы уже отмечали работу сегодня!</p>
+            </div>
+            <div class="error-actions">
+                <button class="action-button" type="button" id="work-error-ok-button" onclick="hideWorkError()">ОК</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="prize-overlay" id="wheel-prize-overlay" aria-hidden="true">
+        <div class="prize-window" role="dialog" aria-modal="true" aria-labelledby="wheel-prize-title">
+            <div class="prize-title-bar" id="wheel-prize-title">Dollar Streak 95 - Приз</div>
+            <div class="prize-content">
+                <div class="prize-icon" aria-hidden="true">!</div>
+                <p class="prize-message" id="wheel-prize-message">Ваш приз: ...</p>
+            </div>
+            <div class="prize-actions">
+                <button class="action-button" type="button" id="wheel-prize-thanks-button">Спасибо!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings window -->
+    <div class="settings-overlay" id="settings-overlay" aria-hidden="true">
+        <div class="settings-window" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+            <div class="settings-title-bar">
+                <div id="settings-title">Dollar Streak 95 - Настройки</div>
+                <div class="title-bar-controls" aria-hidden="true">
+                    <button class="title-bar-button" type="button">_</button>
+                    <button class="title-bar-button" type="button">▢</button>
+                    <button class="title-bar-button close" type="button" id="settings-close-button">×</button>
+                </div>
+            </div>
+            <div class="settings-window-body">
+                <div class="settings-actions">
+                </div>
+                <section class="panel-box" id="work-history-section">
+                    <h2 class="panel-title">История работы</h2>
+                    <p class="history-note">Пока не записано ни одного рабочего дня.</p>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin window -->
+    <div class="admin-overlay" id="admin-overlay" aria-hidden="true">
+        <aside class="admin-window" role="dialog" aria-modal="true" aria-labelledby="admin-title">
+            <div class="admin-title-bar">
+                <div id="admin-title">Админка :)</div>
+                <div class="title-bar-controls" aria-hidden="true">
+                    <button class="title-bar-button" type="button">_</button>
+                    <button class="title-bar-button" type="button">▢</button>
+                    <button class="title-bar-button close" type="button" id="admin-close-button" onclick="closeAdminPopup()">×</button>
+                </div>
+            </div>
+            <div class="admin-window-body">
+                <div class="admin-actions">
+                    <button class="action-button" type="button" id="reset-progress-button" onclick="resetProgressAction()">Сбросить прогресс</button>
+                    <button class="action-button" type="button" id="test-work-day-button">Пропустить день</button>
+                    <button class="action-button" type="button" id="test-add-day-button">Нерабочий день</button>
+                    <button class="action-button" type="button" id="todo-done-button">Выполненные задачи</button>
+                </div>
+                <div class="admin-todo-panel" id="admin-todo-panel" hidden>
+                    <p class="admin-todo-title">Выполненные задачи на сегодня</p>
+                    <div class="admin-todo-list" id="admin-todo-list"></div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <div class="wheel-overlay" id="wheel-overlay" aria-hidden="true">
+        <div class="wheel-window" role="dialog" aria-modal="true" aria-labelledby="wheel-title">
+            <div class="wheel-title-bar">
+                <div class="wheel-title-start">
+                    <span class="wheel-title-icon" aria-hidden="true"></span>
+                    <span id="wheel-title">Колесо фортуны</span>
+                </div>
+                <div class="title-bar-controls" aria-hidden="true">
+                    <button class="title-bar-button" type="button">_</button>
+                    <button class="title-bar-button" type="button">▢</button>
+                    <button class="title-bar-button close" type="button" id="wheel-close-button">×</button>
+                </div>
+            </div>
+            <div class="wheel-window-body">
+                <div class="wheel-machine">
+                    <div class="wheel-stage">
+                        <div class="wheel-pointer" aria-hidden="true"></div>
+                        <div class="wheel-frame">
+                            <div class="wheel-face" id="fortune-wheel">
+                                <span class="wheel-label wheel-label-paid wheel-label-0">+$3</span>
+                                <span class="wheel-label wheel-label-bonus wheel-label-1">+$5</span>
+                                <span class="wheel-label wheel-label-paid wheel-label-2">+$3</span>
+                                <span class="wheel-label wheel-label-bonus wheel-label-3">+$5</span>
+                                <span class="wheel-label wheel-label-paid wheel-label-4">+$3</span>
+                                <span class="wheel-label wheel-label-bonus wheel-label-5">+$5</span>
+                                <span class="wheel-label wheel-label-paid wheel-label-6">+$3</span>
+                                <span class="wheel-label wheel-label-bonus wheel-label-7">+$5</span>
+                                <button class="wheel-center" type="button" id="wheel-lever-button" aria-label="Крутить колесо"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="wheel-result" id="wheel-result-text">Нажмите на центр, чтобы начать</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shared helpers -->
+    <script src="js/utils.js"></script>
+    <script src="js/context.js"></script>
+    <script src="js/wheel.js"></script>
+    <!-- Main app -->
+    <script src="script.js"></script>
+
+</body>
+
+</html>
