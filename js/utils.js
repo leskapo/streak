@@ -92,3 +92,55 @@ function getWeekStartKey(dateKey) {
 
     return `${year}-${month}-${day}`;
 }
+
+const MONEY_SCALE = 100;
+
+function dollarsToCents(amount) {
+    const numericAmount = Number(amount);
+
+    if (!Number.isFinite(numericAmount)) {
+        return 0;
+    }
+
+    return Math.round(numericAmount * MONEY_SCALE);
+}
+
+function normalizeMoneyCents(amount) {
+    const numericAmount = Number(amount);
+
+    if (!Number.isFinite(numericAmount)) {
+        return 0;
+    }
+
+    return Math.round(numericAmount);
+}
+
+function formatMoney(cents) {
+    const numericCents = Number(cents);
+    const amount = Number.isFinite(numericCents) ? numericCents / MONEY_SCALE : 0;
+
+    return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(amount);
+}
+
+function formatMoneyInput(cents) {
+    const numericCents = Number(cents);
+    const amount = Number.isFinite(numericCents) ? numericCents / MONEY_SCALE : 0;
+
+    return amount.toFixed(2);
+}
+
+function parseMoneyInput(value) {
+    const normalizedValue = String(value).trim().replace(",", ".");
+    const parsedAmount = Number(normalizedValue);
+
+    if (!Number.isFinite(parsedAmount)) {
+        return NaN;
+    }
+
+    return Math.round(parsedAmount * MONEY_SCALE);
+}

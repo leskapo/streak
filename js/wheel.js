@@ -1,11 +1,11 @@
 // Wheel feature is isolated in this file.
 // Rules:
-// - unlocked every 10 worked days (type === "work")
-// - one spin per milestone
-// - reward is money only (+$3 or +$5)
+// - unlocked every 10 consecutive worked days
+// - one spin per milestone within the current streak
+// - reward is money only (+$3.00 or +$5.00)
 
-function getWheelQualifiedDayCount() {
-    return historyDays.filter((entry) => entry.type === "work").length;
+function getWheelProgressDayCount() {
+    return currentStreak;
 }
 
 function getCurrentWheelMilestone(dayCount) {
@@ -17,7 +17,7 @@ function getCurrentWheelMilestone(dayCount) {
 }
 
 function getAvailableWheelMilestone() {
-    const dayCount = getWheelQualifiedDayCount();
+    const dayCount = getWheelProgressDayCount();
     const milestone = getCurrentWheelMilestone(dayCount);
 
     if (!milestone) {
@@ -28,11 +28,19 @@ function getAvailableWheelMilestone() {
 }
 
 function getWheelProgressText() {
-    const dayCount = getWheelQualifiedDayCount();
+    const dayCount = getWheelProgressDayCount();
     const remainder = dayCount % 10;
     const daysLeft = remainder === 0 ? 10 : 10 - remainder;
 
     return `Можно покрутить через ${daysLeft} дней!`;
+}
+
+function resetWheelMilestonesIfStreakBroken() {
+    if (currentStreak !== 0 || usedWheelMilestones.length === 0) {
+        return;
+    }
+
+    usedWheelMilestones = [];
 }
 
 function renderWheelStatusWidget() {
@@ -73,12 +81,12 @@ function hideWheelPrize() {
 
 function getSpinResult() {
     return Math.random() < 0.5
-        ? { amount: 3, label: "Ваш приз: +$3" }
-        : { amount: 5, label: "Ваш приз: +$5" };
+        ? { amount: 300, label: `Ваш приз: +${formatMoney(300)}` }
+        : { amount: 500, label: `Ваш приз: +${formatMoney(500)}` };
 }
 
 function getWheelSlotIndexForAmount(amount) {
-    const slotPool = amount === 3 ? [0, 2, 4, 6] : [1, 3, 5, 7];
+    const slotPool = amount === 300 ? [0, 2, 4, 6] : [1, 3, 5, 7];
     return slotPool[Math.floor(Math.random() * slotPool.length)];
 }
 
@@ -103,6 +111,8 @@ function renderWheelPopup() {
 }
 
 function openWheelPopupFromCurrentState() {
+    resetWheelMilestonesIfStreakBroken();
+
     if (getAvailableWheelMilestone() <= 0 || wheelPopupOpen || wheelIsSpinning) {
         renderWheelStatusWidget();
         return;
@@ -158,6 +168,8 @@ function finalizeWheelSpin() {
 }
 
 function startWheelSpin() {
+    resetWheelMilestonesIfStreakBroken();
+
     const availableMilestone = getAvailableWheelMilestone();
 
     if (!wheelPopupOpen || wheelIsSpinning || availableMilestone <= 0) {

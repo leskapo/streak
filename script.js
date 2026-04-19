@@ -75,7 +75,7 @@ function applyWeeklySkipPenalty(dateKey) {
 function resetFullProgressState() {
     currentStreak = 0;
     totalEarned = 0;
-    todayRate = 1;
+    todayRate = 100;
     historyDays = [];
     usedWheelMilestones = [];
     lastSpinResult = "";
@@ -104,7 +104,7 @@ function getLatestWorkDateKey() {
 function resetMainProgress() {
     currentStreak = 0;
     totalEarned = 0;
-    todayRate = 1;
+    todayRate = 100;
     historyDays = [];
     usedWheelMilestones = [];
     lastSpinResult = "";
@@ -120,11 +120,22 @@ function loadState() {
         }
 
         const parsedState = JSON.parse(savedState);
+        const storedMoneyUnit = parsedState.moneyUnit === "cents" ? "cents" : "dollars";
+        const readMoney = (value) => (storedMoneyUnit === "cents" ? normalizeMoneyCents(value) : dollarsToCents(value));
 
         currentStreak = typeof parsedState.currentStreak === "number" ? parsedState.currentStreak : currentStreak;
-        totalEarned = typeof parsedState.totalEarned === "number" ? parsedState.totalEarned : totalEarned;
-        todayRate = typeof parsedState.todayRate === "number" ? parsedState.todayRate : todayRate;
-        historyDays = Array.isArray(parsedState.historyDays) ? parsedState.historyDays : historyDays;
+        totalEarned = typeof parsedState.totalEarned === "number" ? readMoney(parsedState.totalEarned) : totalEarned;
+        todayRate = typeof parsedState.todayRate === "number" ? readMoney(parsedState.todayRate) : todayRate;
+        historyDays = Array.isArray(parsedState.historyDays)
+            ? parsedState.historyDays.map((entry) => (
+                entry && typeof entry === "object"
+                    ? {
+                        ...entry,
+                        amount: readMoney(entry.amount)
+                    }
+                    : entry
+            ))
+            : historyDays;
         usedWheelMilestones = Array.isArray(parsedState.usedWheelMilestones) ? parsedState.usedWheelMilestones : usedWheelMilestones;
         lastSpinResult = typeof parsedState.lastSpinResult === "string" ? parsedState.lastSpinResult : lastSpinResult;
         cycleStartDate = typeof parsedState.cycleStartDate === "string" ? parsedState.cycleStartDate : cycleStartDate;
@@ -132,7 +143,16 @@ function loadState() {
         adminTestCursorDateKey = typeof parsedState.adminTestCursorDateKey === "string" && parsedState.adminTestCursorDateKey
             ? parsedState.adminTestCursorDateKey
             : adminTestCursorDateKey;
-        expenseHistory = Array.isArray(parsedState.expenseHistory) ? parsedState.expenseHistory : expenseHistory;
+        expenseHistory = Array.isArray(parsedState.expenseHistory)
+            ? parsedState.expenseHistory.map((entry) => (
+                entry && typeof entry === "object"
+                    ? {
+                        ...entry,
+                        amount: readMoney(entry.amount)
+                    }
+                    : entry
+            ))
+            : expenseHistory;
     } catch (error) {
         // Если сохранённые данные повреждены или localStorage недоступен, остаёмся на стартовых значениях.
     }
@@ -142,6 +162,7 @@ function loadState() {
 function saveState() {
     try {
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            moneyUnit: "cents",
             currentStreak,
             totalEarned,
             todayRate,
@@ -264,7 +285,7 @@ function hideWorkError() {
 }
 
 function getExpenseHistoryMarkup(entry) {
-    return `<p class="spend-history-item">${formatDateKey(entry.dateKey)} — $${entry.amount}</p>`;
+    return `<p class="spend-history-item">${formatDateKey(entry.dateKey)} — ${formatMoney(entry.amount)}</p>`;
 }
 
 function resetTodoRuntimeState() {
@@ -568,11 +589,11 @@ function renderSpendPopup() {
     }
 
     if (spendMaxNote) {
-        spendMaxNote.textContent = `Доступно: $${totalEarned}`;
+        spendMaxNote.textContent = `Доступно: ${formatMoney(totalEarned)}`;
     }
 
     if (spendAmountInput) {
-        spendAmountInput.max = String(Math.max(0, totalEarned));
+        spendAmountInput.max = formatMoneyInput(Math.max(0, totalEarned));
     }
 
     if (spendHistoryButton) {
@@ -629,8 +650,7 @@ function toggleSpendHistory() {
 }
 
 function confirmSpend() {
-    const rawAmount = Number(spendAmountInput ? spendAmountInput.value : 0);
-    const spendAmount = Math.floor(rawAmount);
+    const spendAmount = spendAmountInput ? parseMoneyInput(spendAmountInput.value) : NaN;
 
     if (!Number.isFinite(spendAmount) || spendAmount <= 0 || totalEarned <= 0) {
         return;
@@ -819,27 +839,27 @@ function getLastWorkEntries() {
 
 function getHistoryItemMarkup(entry) {
     if (entry.type === "work") {
-        return `<p class="history-note">День ${entry.streakDay} — Работа выполнена — $${entry.amount}</p>`;
+        return `<p class="history-note">День ${entry.streakDay} — Работа выполнена — ${formatMoney(entry.amount)}</p>`;
     }
 
     if (entry.type === "skip_day") {
-        return `<p class="history-note">${formatDateKey(entry.dateKey)} — Пропущенный день — $${entry.amount}</p>`;
+        return `<p class="history-note">${formatDateKey(entry.dateKey)} — Пропущенный день — ${formatMoney(entry.amount)}</p>`;
     }
 
-    return `<p class="history-note">${formatDateKey(entry.dateKey)} — Работа выполнена — $${entry.amount}</p>`;
+    return `<p class="history-note">${formatDateKey(entry.dateKey)} — Работа выполнена — ${formatMoney(entry.amount)}</p>`;
 }
 
 function renderSummaryWidgets() {
     currentStreakValue.textContent = `${currentStreak} дней`;
-    currentRateValue.textContent = `$${todayRate}`;
-    totalEarnedValue.textContent = `$${totalEarned}`;
+    currentRateValue.textContent = formatMoney(todayRate);
+    totalEarnedValue.textContent = formatMoney(totalEarned);
 
     if (infoCurrentRate) {
-        infoCurrentRate.textContent = `Текущая ставка: $${todayRate}`;
+        infoCurrentRate.textContent = `Текущая ставка: ${formatMoney(todayRate)}`;
     }
 
     if (infoBalance) {
-        infoBalance.textContent = `Баланс: $${totalEarned}`;
+        infoBalance.textContent = `Баланс: ${formatMoney(totalEarned)}`;
     }
 
     if (infoLastWorkDays) {
@@ -849,7 +869,7 @@ function renderSummaryWidgets() {
             infoLastWorkDays.innerHTML = "<li>Нет данных</li>";
         } else {
             infoLastWorkDays.innerHTML = lastWorkEntries
-                .map((entry) => `<li>День ${entry.streakDay} — Работа выполнена — $${entry.amount}</li>`)
+                .map((entry) => `<li>День ${entry.streakDay} — Работа выполнена — ${formatMoney(entry.amount)}</li>`)
                 .join("");
         }
     }
@@ -963,20 +983,20 @@ function ensureCycleState() {
 
 function getDailyRate(streakDay) {
     if (streakDay <= 0) {
-        return 1;
+        return 100;
     }
 
     const cycleDay = ((streakDay - 1) % CYCLE_LENGTH_DAYS) + 1;
 
     if (cycleDay >= 21) {
-        return 3;
+        return 300;
     }
 
     if (cycleDay >= 11) {
-        return 2;
+        return 200;
     }
 
-    return 1;
+    return 100;
 }
 
 function getWheelProgress(streakDay) {
@@ -1051,6 +1071,9 @@ function renderApp() {
     currentStreak = getWheelEligibleStreakCount();
     todayRate = getDailyRate(currentStreak);
     lastWorkDate = getLatestWorkDateKey();
+    if (typeof resetWheelMilestonesIfStreakBroken === "function") {
+        resetWheelMilestonesIfStreakBroken();
+    }
 
     safeRender(renderCalendar);
     safeRender(renderSummaryWidgets);

@@ -30,8 +30,8 @@
                     <button class="info-button" type="button" aria-label="Информация">i</button>
                     <div class="info-panel" aria-hidden="true">
                         <p class="info-panel-title">Информация</p>
-                        <p class="info-row" id="info-current-rate">Текущая ставка: $1</p>
-                        <p class="info-row" id="info-balance">Баланс: $0</p>
+                        <p class="info-row" id="info-current-rate">Текущая ставка: $1.00</p>
+                        <p class="info-row" id="info-balance">Баланс: $0.00</p>
                         <p class="info-row">Последние 3 рабочих дня:</p>
                         <ul class="info-list" id="info-last-work-days">
                             <li>Нет данных</li>
@@ -46,12 +46,12 @@
                     </div>
                     <div class="metric-box">
                         <span class="metric-label">Текущая дневная ставка</span>
-                        <div class="metric-value" id="current-rate-value">$1</div>
+                        <div class="metric-value" id="current-rate-value">$1.00</div>
                     </div>
                     <div class="metric-box">
                         <span class="metric-label">Всего заработано</span>
                         <div class="metric-value metric-value-with-action">
-                            <span id="total-earned-value">$0</span>
+                            <span id="total-earned-value">$0.00</span>
                             <button class="metric-icon-button" type="button" id="spend-open-button" aria-label="Потратить средства" disabled><span class="metric-icon-symbol" aria-hidden="true">−</span></button>
                         </div>
                     </div>
@@ -180,10 +180,10 @@
             </div>
             <div class="spend-window-body">
                 <p class="spend-text">Введите сумму, которую вы потратили.</p>
-                <p class="spend-note" id="spend-max-note">Доступно: $0</p>
+                <p class="spend-note" id="spend-max-note">Доступно: $0.00</p>
                 <label class="spend-field">
                     <span class="spend-field-label">Сумма</span>
-                    <input class="spend-input" type="number" id="spend-amount-input" min="1" step="1" inputmode="numeric">
+                    <input class="spend-input" type="number" id="spend-amount-input" min="0.01" step="0.01" inputmode="decimal">
                 </label>
                 <div class="spend-actions">
                     <button class="action-button" type="button" id="spend-confirm-button">Списать</button>
@@ -314,14 +314,14 @@
                         <div class="wheel-pointer" aria-hidden="true"></div>
                         <div class="wheel-frame">
                             <div class="wheel-face" id="fortune-wheel">
-                                <span class="wheel-label wheel-label-paid wheel-label-0">+$3</span>
-                                <span class="wheel-label wheel-label-bonus wheel-label-1">+$5</span>
-                                <span class="wheel-label wheel-label-paid wheel-label-2">+$3</span>
-                                <span class="wheel-label wheel-label-bonus wheel-label-3">+$5</span>
-                                <span class="wheel-label wheel-label-paid wheel-label-4">+$3</span>
-                                <span class="wheel-label wheel-label-bonus wheel-label-5">+$5</span>
-                                <span class="wheel-label wheel-label-paid wheel-label-6">+$3</span>
-                                <span class="wheel-label wheel-label-bonus wheel-label-7">+$5</span>
+                                <span class="wheel-label wheel-label-paid wheel-label-0">+$3.00</span>
+                                <span class="wheel-label wheel-label-bonus wheel-label-1">+$5.00</span>
+                                <span class="wheel-label wheel-label-paid wheel-label-2">+$3.00</span>
+                                <span class="wheel-label wheel-label-bonus wheel-label-3">+$5.00</span>
+                                <span class="wheel-label wheel-label-paid wheel-label-4">+$3.00</span>
+                                <span class="wheel-label wheel-label-bonus wheel-label-5">+$5.00</span>
+                                <span class="wheel-label wheel-label-paid wheel-label-6">+$3.00</span>
+                                <span class="wheel-label wheel-label-bonus wheel-label-7">+$5.00</span>
                                 <button class="wheel-center" type="button" id="wheel-lever-button" aria-label="Крутить колесо"></button>
                             </div>
                         </div>

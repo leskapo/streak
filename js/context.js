@@ -85,7 +85,7 @@ const MAX_TODO_ITEMS_PER_DAY = 8;
 // Application state.
 let currentStreak = 0;
 let totalEarned = 0;
-let todayRate = 1;
+let todayRate = 100;
 let historyDays = [];
 let usedWheelMilestones = [];
 let lastSpinResult = "";
