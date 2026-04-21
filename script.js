@@ -1067,15 +1067,183 @@ function triggerRoverActivity() {
 
 const roverStage = document.getElementById("rover-stage");
 const roverSecretMessage = document.getElementById("rover-secret-message");
+const roverFeedPanel = document.getElementById("rover-feed-panel");
+const roverFeedButton = document.getElementById("rover-feed-button");
+const roverFeedVisual = document.getElementById("rover-feed-visual");
+const roverFeedImage = document.getElementById("rover-feed-image");
+const infoWidget = document.querySelector(".info-widget");
+const infoButton = infoWidget ? infoWidget.querySelector(".info-button") : null;
+const infoPanel = infoWidget ? infoWidget.querySelector(".info-panel") : null;
 const totalEarnedValueClickTarget = document.getElementById("total-earned-value");
 const infoBalanceClickTarget = document.getElementById("info-balance");
 const balanceSong = new Audio("I_Need_A_Dollar-400402-mobiles24.mp3");
+const ROVER_FEED_STORAGE_KEY = "dollar-streak-rover-feed-state";
+const ROVER_FEED_DURATION_MS = 5 * 60 * 1000;
 let roverClickCount = 0;
 let roverSecretShown = false;
 let roverSecretHideTimer = null;
 let balanceClickCount = 0;
+let roverFeedHideTimer = null;
+let roverFeedMidnightTimer = null;
+let infoPanelOpen = false;
+let roverFeedState = {
+    lastFedDateKey: "",
+    visibleUntil: 0
+};
 
 balanceSong.preload = "auto";
+
+function loadRoverFeedState() {
+    try {
+        const rawState = window.localStorage.getItem(ROVER_FEED_STORAGE_KEY);
+
+        if (!rawState) {
+            return;
+        }
+
+        const parsedState = JSON.parse(rawState);
+
+        if (parsedState && typeof parsedState === "object") {
+            roverFeedState.lastFedDateKey = typeof parsedState.lastFedDateKey === "string" ? parsedState.lastFedDateKey : "";
+            roverFeedState.visibleUntil = Number(parsedState.visibleUntil) > 0 ? Number(parsedState.visibleUntil) : 0;
+        }
+    } catch (error) {
+        // Если сохранение повреждено или недоступно, начинаем с чистого состояния.
+    }
+}
+
+function saveRoverFeedState() {
+    try {
+        window.localStorage.setItem(ROVER_FEED_STORAGE_KEY, JSON.stringify(roverFeedState));
+    } catch (error) {
+        // Игнорируем недоступный localStorage.
+    }
+}
+
+function isRoverFedToday() {
+    return roverFeedState.lastFedDateKey === getLocalDateKey();
+}
+
+function getRoverFeedTimeUntilMidnight() {
+    const now = new Date();
+    const nextMidnight = new Date(now);
+
+    nextMidnight.setHours(24, 0, 0, 0);
+
+    return Math.max(1000, nextMidnight.getTime() - now.getTime());
+}
+
+function clearRoverFeedTimers() {
+    if (roverFeedHideTimer) {
+        window.clearTimeout(roverFeedHideTimer);
+        roverFeedHideTimer = null;
+    }
+
+    if (roverFeedMidnightTimer) {
+        window.clearTimeout(roverFeedMidnightTimer);
+        roverFeedMidnightTimer = null;
+    }
+}
+
+function scheduleRoverFeedTimers() {
+    clearRoverFeedTimers();
+
+    const remainingVisibilityMs = Number(roverFeedState.visibleUntil) - Date.now();
+
+    if (Number.isFinite(remainingVisibilityMs) && remainingVisibilityMs > 0) {
+        roverFeedHideTimer = window.setTimeout(() => {
+            roverFeedHideTimer = null;
+            roverFeedState.visibleUntil = 0;
+            saveRoverFeedState();
+            renderApp();
+        }, remainingVisibilityMs);
+    } else if (roverFeedState.visibleUntil > 0) {
+        roverFeedState.visibleUntil = 0;
+        saveRoverFeedState();
+    }
+
+    roverFeedMidnightTimer = window.setTimeout(() => {
+        roverFeedMidnightTimer = null;
+        renderApp();
+    }, getRoverFeedTimeUntilMidnight());
+}
+
+function renderRoverFeedWidget() {
+    const isVisible = Number(roverFeedState.visibleUntil) > Date.now();
+    const showButton = !isRoverFedToday();
+    const showPanel = showButton || isVisible;
+
+    if (roverFeedPanel) {
+        roverFeedPanel.hidden = !showPanel;
+    }
+
+    if (roverFeedPanel) {
+        roverFeedPanel.classList.toggle("is-feeding", isVisible);
+    }
+
+    if (roverFeedButton) {
+        roverFeedButton.hidden = !showButton;
+        roverFeedButton.disabled = totalEarned < 1;
+        roverFeedButton.title = !showButton
+            ? "Можно снова после 00:00 по вашему времени"
+            : totalEarned < 1
+                ? "Нужно минимум $0.01"
+                : "Кормление доступно один раз в сутки";
+    }
+
+    if (roverFeedVisual) {
+        roverFeedVisual.hidden = !isVisible;
+        roverFeedVisual.classList.toggle("is-visible", isVisible);
+        roverFeedVisual.setAttribute("aria-hidden", isVisible ? "false" : "true");
+    }
+
+    if (roverFeedImage) {
+        roverFeedImage.alt = isVisible ? "Корм для собачки" : "Корм спрятан";
+    }
+}
+
+function renderInfoWidget() {
+    if (!infoWidget || !infoPanel || !infoButton) {
+        return;
+    }
+
+    infoWidget.classList.toggle("is-open", infoPanelOpen);
+    infoPanel.setAttribute("aria-hidden", infoPanelOpen ? "false" : "true");
+    infoButton.setAttribute("aria-expanded", infoPanelOpen ? "true" : "false");
+}
+
+function toggleInfoWidget() {
+    infoPanelOpen = !infoPanelOpen;
+    renderInfoWidget();
+}
+
+function closeInfoWidget() {
+    if (!infoPanelOpen) {
+        return;
+    }
+
+    infoPanelOpen = false;
+    renderInfoWidget();
+}
+
+function feedRover() {
+    if (isRoverFedToday()) {
+        return;
+    }
+
+    const feedCost = 1;
+
+    if (totalEarned < feedCost) {
+        return;
+    }
+
+    totalEarned = Math.max(0, totalEarned - feedCost);
+    roverFeedState.lastFedDateKey = getLocalDateKey();
+    roverFeedState.visibleUntil = Date.now() + ROVER_FEED_DURATION_MS;
+    saveRoverFeedState();
+    renderApp();
+    triggerRoverActivity();
+}
 
 function showRoverSecretMessage() {
     if (!roverSecretMessage || roverSecretShown) {
@@ -1137,16 +1305,20 @@ function renderApp() {
     safeRender(renderSpendPopup);
     safeRender(renderHistoryWidgets);
     safeRender(renderTodoPanel);
+    safeRender(renderRoverFeedWidget);
+    safeRender(renderInfoWidget);
     safeRender(renderSettingsPopup);
     safeRender(renderAdminPopup);
     safeRender(renderIntroPopup);
 
+    scheduleRoverFeedTimers();
     saveState();
 }
 
 // Инициализация и события.
 loadIntroPreference();
 loadTodoState();
+loadRoverFeedState();
 loadState();
 if (typeof initWheelFeature === "function") {
     initWheelFeature();
@@ -1367,11 +1539,30 @@ if (introCloseButton) {
 if (introStartButton) {
     introStartButton.addEventListener("click", startAppFromIntro);
 }
+if (infoButton) {
+    infoButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        toggleInfoWidget();
+    });
+}
+if (roverFeedButton) {
+    roverFeedButton.addEventListener("click", feedRover);
+}
 if (totalEarnedValueClickTarget) {
     totalEarnedValueClickTarget.addEventListener("click", handleBalanceClick);
 }
 if (infoBalanceClickTarget) {
     infoBalanceClickTarget.addEventListener("click", handleBalanceClick);
+}
+if (infoWidget) {
+    document.addEventListener("click", (event) => {
+        if (!infoPanelOpen || infoWidget.contains(event.target)) {
+            return;
+        }
+
+        closeInfoWidget();
+    });
 }
 if (roverStage) {
     const handleRoverClick = () => {

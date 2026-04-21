@@ -429,7 +429,8 @@ body.is-wheel-spinning *:hover {
 }
 
 .info-widget:hover .info-panel,
-.info-widget:focus-within .info-panel {
+.info-widget:focus-within .info-panel,
+.info-widget.is-open .info-panel {
     display: block;
 }
 
@@ -1697,14 +1698,94 @@ body.is-wheel-spinning *:hover {
     gap: 16px;
 }
 
-.rover-stage {
+.rover-feeding-row {
+    display: grid;
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 0;
+    align-items: start;
+    position: relative;
+}
+
+.rover-feed-panel {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    width: 102px;
+    justify-self: end;
+    padding-top: 2px;
+    position: relative;
+    z-index: 1;
+}
+
+.rover-feed-swap {
     position: relative;
     width: 100%;
+    min-height: 72px;
+}
+
+.rover-feed-panel.is-feeding .rover-feed-button {
+    display: none;
+}
+
+.rover-feed-button {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -2px;
+    bottom: auto;
+    width: 100%;
+    min-width: 0;
+    padding: 3px 10px;
+    font-size: 12px;
+    line-height: 1;
+    text-align: center;
+}
+
+.rover-feed-visual {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transform: translateY(6px) scale(0.96);
+    transition:
+        opacity 180ms ease,
+        transform 180ms ease,
+        max-height 180ms ease;
+    pointer-events: none;
+}
+
+.rover-feed-visual.is-visible {
+    opacity: 1;
+    max-height: 100%;
+    transform: translateY(0) scale(1);
+}
+
+.rover-feed-image {
+    display: block;
+    width: 100%;
+    max-width: 108px;
+    height: auto;
+    image-rendering: pixelated;
+    user-select: none;
+    pointer-events: none;
+}
+
+.rover-stage {
+    position: relative;
+    width: 184px;
+    justify-self: start;
     height: 86px;
+    margin-left: -54px;
     margin-bottom: -12px;
     overflow: visible;
     pointer-events: auto;
-    z-index: 4;
+    z-index: 3;
     cursor: pointer;
     outline: none;
 }
@@ -1761,6 +1842,34 @@ body.is-wheel-spinning *:hover {
 
 .rover-stage:focus-visible .rover-message {
     border-color: var(--win-blue);
+}
+
+@media (max-width: 760px) {
+    .rover-feeding-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .rover-feed-panel {
+        align-items: stretch;
+        width: 100%;
+        justify-self: stretch;
+        padding-top: 0;
+    }
+
+    .rover-stage {
+        width: 100%;
+        justify-self: stretch;
+        margin-left: 0;
+    }
+
+    .rover-feed-swap {
+        min-height: 92px;
+    }
+
+    .rover-feed-image {
+        max-width: 120px;
+    }
 }
 
 .admin-launcher {
@@ -1945,4 +2054,358 @@ body.is-wheel-spinning *:hover {
     }
 
 }
-    
+
+@media (max-width: 900px) {
+    body {
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        min-height: 100dvh;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding: 10px 0 18px;
+        background:
+            radial-gradient(circle at top, rgba(255, 255, 255, 0.14), transparent 42%),
+            linear-gradient(180deg, #0c8f8f 0%, #007d7d 100%);
+    }
+
+    .workspace {
+        width: min(100vw - 12px, 760px);
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .app-window,
+    .sidebar-column,
+    .calendar-window,
+    .todo-panel {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .window-content {
+        padding: 12px;
+    }
+
+    .app-title {
+        font-size: 24px;
+    }
+
+    .subtitle {
+        margin-bottom: 12px;
+        font-size: 13px;
+        line-height: 1.35;
+    }
+
+    .info-widget {
+        position: relative;
+        top: 0;
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        margin-bottom: 8px;
+        z-index: 6;
+    }
+
+    .info-panel {
+        position: static;
+        width: 100%;
+        margin-top: 6px;
+    }
+
+    .metrics-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .metric-box {
+        min-height: auto;
+        padding: 9px;
+    }
+
+    .metric-label {
+        margin-bottom: 8px;
+        font-size: 12px;
+    }
+
+    .metric-value {
+        font-size: 18px;
+    }
+
+    .panel-box {
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    .panel-title {
+        font-size: 14px;
+    }
+
+    .panel-text {
+        font-size: 12px;
+    }
+
+    .main-toolbar {
+        justify-content: stretch;
+    }
+
+    .main-toolbar .action-button {
+        width: 100%;
+    }
+
+    .action-button {
+        min-width: 0;
+        width: 100%;
+        padding: 9px 12px;
+        font-size: 13px;
+    }
+
+    .daily-checkin-actions {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .daily-checkin-actions .action-button {
+        flex: 1 1 auto;
+    }
+
+    .status-bar {
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 4px 8px;
+        padding: 6px 8px;
+        font-size: 10px;
+    }
+
+    .sidebar-column {
+        gap: 12px;
+    }
+
+    .rover-feeding-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .rover-feed-panel {
+        width: 100%;
+        justify-self: stretch;
+        padding-top: 0;
+    }
+
+    .rover-feed-swap {
+        min-height: 72px;
+    }
+
+    .rover-stage {
+        width: min(260px, 100%);
+        justify-self: center;
+        margin-left: 0;
+        height: 92px;
+    }
+
+    .rover-image {
+        width: min(184px, 100%);
+    }
+
+    .rover-message {
+        max-width: 100%;
+        white-space: normal;
+        text-align: center;
+    }
+
+    .calendar-window-body {
+        padding: 10px;
+    }
+
+    .calendar-heading {
+        font-size: 14px;
+    }
+
+    .calendar-nav-button {
+        width: 30px;
+        height: 26px;
+    }
+
+    .calendar-weekdays,
+    .calendar-grid {
+        gap: 3px;
+    }
+
+    .calendar-weekday {
+        font-size: 10px;
+    }
+
+    .calendar-day {
+        min-height: 34px;
+        font-size: 10px;
+    }
+
+    .calendar-check,
+    .calendar-marker {
+        font-size: 11px;
+    }
+
+    .todo-add-row {
+        flex-direction: column;
+    }
+
+    .todo-input {
+        width: 100%;
+        font-size: 13px;
+        padding: 9px 10px;
+    }
+
+    .todo-list {
+        max-height: 240px;
+    }
+
+    .todo-item {
+        font-size: 11px;
+    }
+
+    .intro-window,
+    .spend-window,
+    .calendar-edit-window,
+    .error-window,
+    .prize-window,
+    .settings-window,
+    .admin-window,
+    .wheel-window {
+        width: min(100vw - 12px, 640px);
+    }
+
+    .intro-window-body,
+    .spend-window-body,
+    .calendar-edit-content,
+    .error-content,
+    .prize-content,
+    .settings-window-body,
+    .admin-window-body {
+        padding: 12px;
+    }
+
+    .wheel-machine {
+        min-height: auto;
+        padding: 16px 8px 92px;
+    }
+
+    .wheel-stage {
+        width: min(100%, 360px);
+    }
+
+    .wheel-frame {
+        width: min(82vw, 340px);
+        height: min(82vw, 340px);
+        padding: 12px;
+        --wheel-label-offset: clamp(70px, 22vw, 118px);
+    }
+
+    .wheel-pointer {
+        width: 56px;
+        height: 58px;
+    }
+
+    .wheel-label {
+        width: 86px;
+        font-size: 17px;
+        letter-spacing: 0.4px;
+    }
+
+    .wheel-center {
+        width: 104px;
+        height: 104px;
+    }
+
+    .wheel-center::before {
+        font-size: 19px;
+    }
+
+    .wheel-result {
+        margin-top: 12px;
+        font-size: 13px;
+    }
+
+    .lever-column {
+        left: 50%;
+        bottom: 10px;
+        width: min(190px, 70vw);
+        transform: translateX(-50%);
+    }
+
+    .lever-button {
+        width: 100%;
+        height: 54px;
+        font-size: 18px;
+    }
+
+    .admin-launcher {
+        left: 10px;
+        bottom: 10px;
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+
+    .admin-overlay {
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+    }
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .todo-delete-button,
+    .admin-todo-return-button {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+@media (max-width: 540px) {
+    .workspace {
+        width: calc(100vw - 10px);
+    }
+
+    .window-content {
+        padding: 10px;
+    }
+
+    .app-title {
+        font-size: 22px;
+    }
+
+    .metric-value {
+        font-size: 17px;
+    }
+
+    .calendar-day {
+        min-height: 30px;
+    }
+
+    .rover-stage {
+        width: min(230px, 100%);
+        height: 88px;
+    }
+
+    .wheel-frame {
+        width: min(86vw, 300px);
+        height: min(86vw, 300px);
+    }
+
+    .wheel-label {
+        width: 76px;
+        font-size: 15px;
+    }
+
+    .wheel-center {
+        width: 92px;
+        height: 92px;
+    }
+
+    .wheel-center::before {
+        font-size: 17px;
+    }
+}

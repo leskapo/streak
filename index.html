@@ -87,10 +87,20 @@
         <!-- Calendar column -->
         <div class="sidebar-column">
             <!-- Rover mascot -->
-            <div class="rover-stage" id="rover-stage" role="button" tabindex="0" aria-label="Собачка">
-                <img class="rover-image rover-image-idle is-visible" id="rover-idle-image" src="pic/смотрит.gif" alt="">
-                <img class="rover-image rover-image-activity" id="rover-activity-image" src="pic/rover-windows-xp.gif" alt="">
-                <p class="rover-message" id="rover-secret-message" hidden>я люблю тебя, котенок рябыш</p>
+            <div class="rover-feeding-row">
+                <div class="rover-feed-panel" id="rover-feed-panel" aria-label="Кормление собачки">
+                    <div class="rover-feed-swap">
+                        <button class="action-button rover-feed-button" type="button" id="rover-feed-button">Покормить $0.01</button>
+                        <div class="rover-feed-visual" id="rover-feed-visual" aria-hidden="true">
+                            <img class="rover-feed-image" id="rover-feed-image" src="pic/44161188-pixel-art-illustration-animal-de-compagnie-aliments-pixelise-chat-chien-aliments-chat-chien-animal-de-compagnie-nourriture-pixelise-pour-le-pixel-art-jeu-et-icone-pour-site-internet-et-jeu-vieux-ecole-retro-vectoriel.png" alt="Корм для собачки">
+                        </div>
+                    </div>
+                </div>
+                <div class="rover-stage" id="rover-stage" role="button" tabindex="0" aria-label="Собачка">
+                    <img class="rover-image rover-image-idle is-visible" id="rover-idle-image" src="pic/смотрит.gif" alt="">
+                    <img class="rover-image rover-image-activity" id="rover-activity-image" src="pic/rover-windows-xp.gif" alt="">
+                    <p class="rover-message" id="rover-secret-message" hidden>я люблю тебя, котенок рябыш</p>
+                </div>
             </div>
 
             <!-- Monthly calendar -->
