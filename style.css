@@ -1703,8 +1703,10 @@ body.is-wheel-spinning *:hover {
     height: 86px;
     margin-bottom: -12px;
     overflow: visible;
-    pointer-events: none;
+    pointer-events: auto;
     z-index: 4;
+    cursor: pointer;
+    outline: none;
 }
 
 .rover-image {
@@ -1736,6 +1738,29 @@ body.is-wheel-spinning *:hover {
 
 .rover-image-activity.is-visible {
     opacity: 1;
+}
+
+.rover-message {
+    position: absolute;
+    left: 50%;
+    bottom: -12px;
+    transform: translateX(-50%);
+    margin: 0;
+    padding: 4px 8px;
+    background: var(--win-gray);
+    border: 1px solid var(--win-dark);
+    box-shadow:
+        inset 1px 1px 0 var(--win-light),
+        inset -1px -1px 0 var(--win-darker);
+    font-size: 12px;
+    line-height: 1.2;
+    white-space: nowrap;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.rover-stage:focus-visible .rover-message {
+    border-color: var(--win-blue);
 }
 
 .admin-launcher {

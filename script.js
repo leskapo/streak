@@ -1065,6 +1065,57 @@ function triggerRoverActivity() {
     }
 }
 
+const roverStage = document.getElementById("rover-stage");
+const roverSecretMessage = document.getElementById("rover-secret-message");
+const totalEarnedValueClickTarget = document.getElementById("total-earned-value");
+const infoBalanceClickTarget = document.getElementById("info-balance");
+const balanceSong = new Audio("I_Need_A_Dollar-400402-mobiles24.mp3");
+let roverClickCount = 0;
+let roverSecretShown = false;
+let roverSecretHideTimer = null;
+let balanceClickCount = 0;
+
+balanceSong.preload = "auto";
+
+function showRoverSecretMessage() {
+    if (!roverSecretMessage || roverSecretShown) {
+        return;
+    }
+
+    roverSecretShown = true;
+    roverSecretMessage.hidden = false;
+
+    if (roverSecretHideTimer) {
+        window.clearTimeout(roverSecretHideTimer);
+    }
+
+    roverSecretHideTimer = window.setTimeout(() => {
+        roverSecretMessage.hidden = true;
+        roverSecretHideTimer = null;
+    }, 5000);
+}
+
+function playBalanceSong() {
+    balanceSong.currentTime = 0;
+
+    const playPromise = balanceSong.play();
+
+    if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch(() => {
+            // Автовоспроизведение может быть ограничено браузером; молча игнорируем.
+        });
+    }
+}
+
+function handleBalanceClick() {
+    balanceClickCount += 1;
+
+    if (balanceClickCount >= 5) {
+        balanceClickCount = 0;
+        playBalanceSong();
+    }
+}
+
 function renderApp() {
     ensureCycleState();
     ensureHistoryDates();
@@ -1315,6 +1366,33 @@ if (introCloseButton) {
 
 if (introStartButton) {
     introStartButton.addEventListener("click", startAppFromIntro);
+}
+if (totalEarnedValueClickTarget) {
+    totalEarnedValueClickTarget.addEventListener("click", handleBalanceClick);
+}
+if (infoBalanceClickTarget) {
+    infoBalanceClickTarget.addEventListener("click", handleBalanceClick);
+}
+if (roverStage) {
+    const handleRoverClick = () => {
+        roverClickCount += 1;
+
+        if (roverClickCount >= 5) {
+            showRoverSecretMessage();
+        }
+
+        triggerRoverActivity();
+    };
+
+    roverStage.addEventListener("click", handleRoverClick);
+    roverStage.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") {
+            return;
+        }
+
+        event.preventDefault();
+        handleRoverClick();
+    });
 }
 calendarEditWorkButton.addEventListener("click", () => {
     setSelectedCalendarDayStatus("work");
