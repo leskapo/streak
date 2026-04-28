@@ -81,6 +81,8 @@ const TODO_STORAGE_KEY = "dollar-streak-95-todo-state";
 const CYCLE_LENGTH_DAYS = 30;
 const WHEEL_SPIN_DURATION_MS = 2800;
 const MAX_TODO_ITEMS_PER_DAY = 8;
+const MAX_BALANCE_OVERDRAFT = 500;
+const DAILY_DEBT_ACCRUAL = 80;
 
 // Application state.
 let currentStreak = 0;
@@ -91,6 +93,7 @@ let usedWheelMilestones = [];
 let lastSpinResult = "";
 let cycleStartDate = "";
 let lastWorkDate = "";
+let lastDebtAccrualDate = "";
 let wheelPopupOpen = false;
 let wheelIsSpinning = false;
 let wheelRotation = 0;

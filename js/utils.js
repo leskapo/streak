@@ -93,6 +93,18 @@ function getWeekStartKey(dateKey) {
     return `${year}-${month}-${day}`;
 }
 
+function isWeekendDateKey(dateKey) {
+    const date = new Date(`${dateKey}T00:00:00Z`);
+
+    if (Number.isNaN(date.getTime())) {
+        return false;
+    }
+
+    const dayIndex = date.getUTCDay();
+
+    return dayIndex === 0 || dayIndex === 6;
+}
+
 const MONEY_SCALE = 100;
 
 function dollarsToCents(amount) {

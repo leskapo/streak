@@ -1,19 +1,19 @@
 // Wheel feature is isolated in this file.
 // Rules:
-// - unlocked every 10 consecutive worked days
-// - one spin per milestone within the current streak
+// - unlocked every 5 worked days, consecutive or not
+// - one spin per milestone within the total worked-day count
 // - reward is money only (+$3.00 or +$5.00)
 
 function getWheelProgressDayCount() {
-    return currentStreak;
+    return getActiveHistoryEntryCount();
 }
 
 function getCurrentWheelMilestone(dayCount) {
-    if (dayCount < 10) {
+    if (dayCount < 5) {
         return 0;
     }
 
-    return Math.floor(dayCount / 10) * 10;
+    return Math.floor(dayCount / 5) * 5;
 }
 
 function getAvailableWheelMilestone() {
@@ -29,18 +29,14 @@ function getAvailableWheelMilestone() {
 
 function getWheelProgressText() {
     const dayCount = getWheelProgressDayCount();
-    const remainder = dayCount % 10;
-    const daysLeft = remainder === 0 ? 10 : 10 - remainder;
+    const remainder = dayCount % 5;
+    const daysLeft = remainder === 0 ? 5 : 5 - remainder;
 
-    return `Можно покрутить через ${daysLeft} дней!`;
+    return `Можно покрутить через ${daysLeft} рабочих дней!`;
 }
 
 function resetWheelMilestonesIfStreakBroken() {
-    if (currentStreak !== 0 || usedWheelMilestones.length === 0) {
-        return;
-    }
-
-    usedWheelMilestones = [];
+    return;
 }
 
 function renderWheelStatusWidget() {

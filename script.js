@@ -58,6 +58,7 @@ function getSkipPenaltyPercent(skipDayCount) {
 }
 
 function applyWeeklySkipPenalty(dateKey) {
+    const previousBalance = totalEarned;
     const skipDayCount = getSkipDayCountForWeek(getWeekStartKey(dateKey));
     const penaltyPercent = getSkipPenaltyPercent(skipDayCount);
 
@@ -68,8 +69,53 @@ function applyWeeklySkipPenalty(dateKey) {
     const penaltyAmount = Math.ceil(totalEarned * (penaltyPercent / 100));
 
     if (penaltyAmount > 0) {
-        totalEarned = Math.max(0, totalEarned - penaltyAmount);
+        totalEarned = Math.max(-MAX_BALANCE_OVERDRAFT, totalEarned - penaltyAmount);
+        if (previousBalance >= 0 && totalEarned < 0) {
+            lastDebtAccrualDate = getLocalDateKey();
+        }
     }
+}
+
+function anchorDebtAccrualIfNeeded(previousBalance) {
+    if (previousBalance >= 0 && totalEarned < 0) {
+        lastDebtAccrualDate = getLocalDateKey();
+    }
+}
+
+function applyDailyDebtAccrual() {
+    const todayKey = getLocalDateKey();
+
+    if (!isValidDateKey(lastDebtAccrualDate)) {
+        lastDebtAccrualDate = todayKey;
+        return false;
+    }
+
+    if (totalEarned >= 0) {
+        lastDebtAccrualDate = todayKey;
+        return false;
+    }
+
+    let accrualDateKey = shiftDateKey(lastDebtAccrualDate, 1);
+    let changed = false;
+
+    while (
+        isValidDateKey(accrualDateKey)
+        && getDaysBetween(accrualDateKey, todayKey) >= 0
+        && totalEarned < 0
+    ) {
+        totalEarned = Math.max(-MAX_BALANCE_OVERDRAFT, totalEarned - DAILY_DEBT_ACCRUAL);
+        lastDebtAccrualDate = accrualDateKey;
+        changed = true;
+
+        if (totalEarned <= -MAX_BALANCE_OVERDRAFT) {
+            lastDebtAccrualDate = todayKey;
+            break;
+        }
+
+        accrualDateKey = shiftDateKey(accrualDateKey, 1);
+    }
+
+    return changed;
 }
 
 function resetFullProgressState() {
@@ -80,6 +126,7 @@ function resetFullProgressState() {
     usedWheelMilestones = [];
     lastSpinResult = "";
     cycleStartDate = getLocalDateKey();
+    lastDebtAccrualDate = getLocalDateKey();
     resetAdminTestCursor();
     expenseHistory = [];
 }
@@ -109,6 +156,7 @@ function resetMainProgress() {
     usedWheelMilestones = [];
     lastSpinResult = "";
     lastWorkDate = "";
+    lastDebtAccrualDate = getLocalDateKey();
 }
 
 function loadState() {
@@ -140,6 +188,7 @@ function loadState() {
         lastSpinResult = typeof parsedState.lastSpinResult === "string" ? parsedState.lastSpinResult : lastSpinResult;
         cycleStartDate = typeof parsedState.cycleStartDate === "string" ? parsedState.cycleStartDate : cycleStartDate;
         lastWorkDate = typeof parsedState.lastWorkDate === "string" ? parsedState.lastWorkDate : lastWorkDate;
+        lastDebtAccrualDate = typeof parsedState.lastDebtAccrualDate === "string" ? parsedState.lastDebtAccrualDate : lastDebtAccrualDate;
         adminTestCursorDateKey = typeof parsedState.adminTestCursorDateKey === "string" && parsedState.adminTestCursorDateKey
             ? parsedState.adminTestCursorDateKey
             : adminTestCursorDateKey;
@@ -171,6 +220,7 @@ function saveState() {
             lastSpinResult,
             cycleStartDate,
             lastWorkDate,
+            lastDebtAccrualDate,
             adminTestCursorDateKey,
             expenseHistory
         }));
@@ -584,16 +634,17 @@ function restoreCompletedTodoItem(todoId) {
 // Окно траты средств.
 function renderSpendPopup() {
     if (spendOpenButton) {
-        spendOpenButton.disabled = totalEarned <= 0;
-        spendOpenButton.title = totalEarned > 0 ? "Потратить средства" : "Недостаточно средств";
+        spendOpenButton.disabled = totalEarned <= -MAX_BALANCE_OVERDRAFT;
+        spendOpenButton.title = totalEarned > -MAX_BALANCE_OVERDRAFT ? "Потратить средства" : "Лимит овердрафта исчерпан";
     }
 
     if (spendMaxNote) {
-        spendMaxNote.textContent = `Доступно: ${formatMoney(totalEarned)}`;
+        const maxSpendable = Math.max(0, totalEarned + MAX_BALANCE_OVERDRAFT);
+        spendMaxNote.textContent = `Доступно к списанию: ${formatMoney(maxSpendable)}`;
     }
 
     if (spendAmountInput) {
-        spendAmountInput.max = formatMoneyInput(Math.max(0, totalEarned));
+        spendAmountInput.max = formatMoneyInput(Math.max(0, totalEarned + MAX_BALANCE_OVERDRAFT));
     }
 
     if (spendHistoryButton) {
@@ -620,7 +671,7 @@ function renderSpendPopup() {
 }
 
 function openSpendPopup() {
-    if (totalEarned <= 0) {
+    if (totalEarned <= -MAX_BALANCE_OVERDRAFT) {
         return;
     }
 
@@ -651,14 +702,17 @@ function toggleSpendHistory() {
 
 function confirmSpend() {
     const spendAmount = spendAmountInput ? parseMoneyInput(spendAmountInput.value) : NaN;
+    const maxSpendAmount = totalEarned + MAX_BALANCE_OVERDRAFT;
 
-    if (!Number.isFinite(spendAmount) || spendAmount <= 0 || totalEarned <= 0) {
+    if (!Number.isFinite(spendAmount) || spendAmount <= 0 || maxSpendAmount <= 0) {
         return;
     }
 
-    const spentAmount = Math.min(spendAmount, totalEarned);
+    const spentAmount = Math.min(spendAmount, maxSpendAmount);
+    const previousBalance = totalEarned;
 
-    totalEarned = Math.max(0, totalEarned - spentAmount);
+    totalEarned = Math.max(-MAX_BALANCE_OVERDRAFT, totalEarned - spentAmount);
+    anchorDebtAccrualIfNeeded(previousBalance);
     expenseHistory.push({
         dateKey: getLocalDateKey(),
         amount: spentAmount
@@ -701,6 +755,21 @@ function getCalendarDayMarker(entryType) {
     }
 }
 
+function getSkipDayOrdinalForDateKey(dateKey) {
+    if (!isValidDateKey(dateKey)) {
+        return 0;
+    }
+
+    const weekStartKey = getWeekStartKey(dateKey);
+
+    return historyDays.filter((entry) => (
+        entry.type === "skip_day"
+        && isValidDateKey(entry.dateKey)
+        && entry.dateKey >= weekStartKey
+        && entry.dateKey <= dateKey
+    )).length;
+}
+
 function getCalendarEditCurrentType(dateKey) {
     const entry = getHistoryEntryByDateKey(dateKey);
 
@@ -712,6 +781,7 @@ function setCalendarDayStatus(dateKey, newType) {
     const existingEntry = entryIndex >= 0 ? historyDays[entryIndex] : null;
     const currentType = existingEntry ? existingEntry.type : "";
     const activeCountBefore = getActiveHistoryEntryCount();
+    const previousBalance = totalEarned;
     let amountDelta = 0;
     let nextAmount = 0;
     let nextStreakDay = activeCountBefore;
@@ -752,10 +822,11 @@ function setCalendarDayStatus(dateKey, newType) {
         historyDays.push(nextEntry);
     }
 
-    totalEarned += amountDelta;
+    totalEarned = Math.max(-MAX_BALANCE_OVERDRAFT, totalEarned + amountDelta);
     if (newType === "skip_day") {
         applyWeeklySkipPenalty(dateKey);
     }
+    anchorDebtAccrualIfNeeded(previousBalance);
     currentStreak = getWheelEligibleStreakCount();
     todayRate = getDailyRate(currentStreak);
     lastWorkDate = getLatestWorkDateKey();
@@ -938,11 +1009,14 @@ function renderCalendar() {
         const entryType = entryTypesByDate.get(dateKey);
         const isWorked = entryType === "work";
         const isSkipped = entryType === "skip_day";
+        const skipOrdinal = isSkipped ? getSkipDayOrdinalForDateKey(dateKey) : 0;
+        const isWarningSkip = isSkipped && skipOrdinal > 0 && skipOrdinal < 3;
+        const isPenaltySkip = isSkipped && skipOrdinal >= 3;
         const isToday = dateKey === todayKey;
-        const marker = getCalendarDayMarker(entryType);
+        const marker = isPenaltySkip ? getCalendarDayMarker(entryType) : "";
 
         cells.push(`
-            <div class="calendar-day${isWorked ? " is-worked" : ""}${isSkipped ? " is-skipped" : ""}${isToday ? " is-today" : ""}" title="${dateKey}" data-date-key="${dateKey}" role="button" tabindex="0">
+            <div class="calendar-day${isWorked ? " is-worked" : ""}${isWarningSkip ? " is-paid-skip" : ""}${isPenaltySkip ? " is-skipped" : ""}${isToday ? " is-today" : ""}" title="${dateKey}" data-date-key="${dateKey}" role="button" tabindex="0">
                 ${marker}
                 <span class="calendar-day-number">${day}</span>
             </div>
@@ -999,11 +1073,11 @@ function getDailyRate(streakDay) {
     return 100;
 }
 
-function getWheelProgress(streakDay) {
-    const remainder = streakDay % 10;
-    const daysUntilNextMilestone = remainder === 0 ? 10 : 10 - remainder;
+function getWheelProgress(dayCount) {
+    const remainder = dayCount % 5;
+    const daysUntilNextMilestone = remainder === 0 ? 5 : 5 - remainder;
 
-    return `Можно покрутить через ${daysUntilNextMilestone} дней!`;
+    return `Можно покрутить через ${daysUntilNextMilestone} рабочих дней!`;
 }
 
 function getWheelEligibleStreakCount() {
@@ -1032,19 +1106,54 @@ function getWheelEligibleStreakCount() {
     }
 
     let streak = 0;
-    // For normal play we count from today, for admin/test flow we allow future
-    // contiguous dates to drive the same progression.
-    let cursor = latestDateKey > todayKey ? latestDateKey : todayKey;
+    let cursor = latestDateKey;
+
+    if (latestDateKey <= todayKey) {
+        const gapDays = getDaysBetween(latestDateKey, todayKey);
+        let onlyNeutralGap = true;
+
+        for (let offset = 1; offset < gapDays; offset += 1) {
+            if (!isWeekendDateKey(shiftDateKey(latestDateKey, offset))) {
+                onlyNeutralGap = false;
+                break;
+            }
+        }
+
+        if (!onlyNeutralGap) {
+            cursor = todayKey;
+        }
+    }
 
     while (true) {
         const entry = entriesByDate.get(cursor);
 
-        if (!entry || entry.type !== "work") {
-            break;
+        if (entry) {
+            if (entry.type === "skip_day") {
+                const skipOrdinal = getSkipDayOrdinalForDateKey(cursor);
+
+                if (skipOrdinal >= 3) {
+                    break;
+                }
+
+                cursor = shiftDateKey(cursor, -1);
+                continue;
+            }
+
+            if (entry.type !== "work") {
+                break;
+            }
+
+            streak += 1;
+            cursor = shiftDateKey(cursor, -1);
+            continue;
         }
 
-        streak += 1;
-        cursor = shiftDateKey(cursor, -1);
+        if (isWeekendDateKey(cursor)) {
+            cursor = shiftDateKey(cursor, -1);
+            continue;
+        }
+
+        break;
     }
 
     return streak;
@@ -1237,7 +1346,7 @@ function feedRover() {
         return;
     }
 
-    totalEarned = Math.max(0, totalEarned - feedCost);
+    totalEarned = Math.max(-MAX_BALANCE_OVERDRAFT, totalEarned - feedCost);
     roverFeedState.lastFedDateKey = getLocalDateKey();
     roverFeedState.visibleUntil = Date.now() + ROVER_FEED_DURATION_MS;
     saveRoverFeedState();
@@ -1287,6 +1396,7 @@ function handleBalanceClick() {
 function renderApp() {
     ensureCycleState();
     ensureHistoryDates();
+    applyDailyDebtAccrual();
     currentStreak = getWheelEligibleStreakCount();
     todayRate = getDailyRate(currentStreak);
     lastWorkDate = getLatestWorkDateKey();

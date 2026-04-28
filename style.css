@@ -958,11 +958,11 @@ body.is-wheel-spinning *:hover {
 }
 
 .calendar-day.is-paid-skip {
-    background: #fff0c8;
+    background: linear-gradient(180deg, #ffe0a8 0%, #ffc96d 100%);
 }
 
 .calendar-day.is-skipped {
-    background: #f7d2d2;
+    background: linear-gradient(180deg, #ffd0d0 0%, #f7a6a6 100%);
 }
 
 .calendar-day.is-today {
@@ -2056,13 +2056,21 @@ body.is-wheel-spinning *:hover {
 }
 
 @media (max-width: 900px) {
+    html {
+        height: auto;
+        min-height: 100%;
+        overflow-y: auto;
+    }
+
     body {
         display: flex;
         align-items: flex-start;
         justify-content: center;
+        height: auto;
         min-height: 100dvh;
         overflow-x: hidden;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         padding: 10px 0 18px;
         background:
             radial-gradient(circle at top, rgba(255, 255, 255, 0.14), transparent 42%),
