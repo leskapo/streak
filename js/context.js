@@ -78,7 +78,6 @@ const spendHistoryList = document.getElementById("spend-history-list");
 const STORAGE_KEY = "dollar-streak-95-state";
 const INTRO_STORAGE_KEY = "dollar-streak-95-intro-hidden";
 const TODO_STORAGE_KEY = "dollar-streak-95-todo-state";
-const CYCLE_LENGTH_DAYS = 30;
 const WHEEL_SPIN_DURATION_MS = 2800;
 const MAX_TODO_ITEMS_PER_DAY = 8;
 const MAX_BALANCE_OVERDRAFT = 500;

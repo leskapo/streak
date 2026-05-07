@@ -1040,15 +1040,16 @@ function ensureCycleState() {
         return;
     }
 
-    const elapsedDays = getDaysBetween(cycleStartDate, todayKey);
+    const todayMonthKey = getMonthKey(todayKey);
+    const cycleMonthKey = getMonthKey(cycleStartDate);
 
-    if (!Number.isFinite(elapsedDays)) {
+    if (!todayMonthKey || !cycleMonthKey) {
         cycleStartDate = todayKey;
         saveState();
         return;
     }
 
-    if (elapsedDays >= CYCLE_LENGTH_DAYS) {
+    if (todayMonthKey !== cycleMonthKey) {
         resetMainProgress();
         cycleStartDate = todayKey;
         saveState();
@@ -1060,17 +1061,9 @@ function getDailyRate(streakDay) {
         return 100;
     }
 
-    const cycleDay = ((streakDay - 1) % CYCLE_LENGTH_DAYS) + 1;
+    const rateTier = Math.floor((streakDay - 1) / 10) + 1;
 
-    if (cycleDay >= 21) {
-        return 300;
-    }
-
-    if (cycleDay >= 11) {
-        return 200;
-    }
-
-    return 100;
+    return rateTier * 100;
 }
 
 function getWheelProgress(dayCount) {

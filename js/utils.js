@@ -54,6 +54,19 @@ function getMonthTitle(date = new Date()) {
     return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
+function getMonthKey(dateKey) {
+    const date = new Date(`${dateKey}T00:00:00Z`);
+
+    if (Number.isNaN(date.getTime())) {
+        return "";
+    }
+
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+
+    return `${year}-${month}`;
+}
+
 function formatDateKey(dateKey) {
     const date = new Date(`${dateKey}T00:00:00Z`);
 
